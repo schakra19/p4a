@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
     int listenfd, connfd, port, clientlen;
     struct sockaddr_in clientaddr;
 	//testing github
+	int a = 0;
     getargs(&port, argc, argv);
 
     // 
