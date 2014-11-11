@@ -22,10 +22,12 @@
  */
 
 #include "cs537.h"
-
+#include <pthread.h>
 /*
  * Send an HTTP request for the specified file 
  */
+char *host, *filename;
+int port;
 void clientSend(int fd, char *filename)
 {
   char buf[MAXLINE];
@@ -71,28 +73,41 @@ void clientPrint(int fd)
   }
 }
 
-int main(int argc, char *argv[])
-{
-  char *host, *filename;
-  int port;
+void *myFunc(void *arg){
   int clientfd;
-
-  if (argc != 4) {
-    fprintf(stderr, "Usage: %s <host> <port> <filename>\n", argv[0]);
-    exit(1);
-  }
-
-  host = argv[1];
-  port = atoi(argv[2]);
-  filename = argv[3];
-
-  /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
   
   clientSend(clientfd, filename);
   clientPrint(clientfd);
     
   Close(clientfd);
+  return 0;
+}
+//void *myFunc(void *arg){ return 0;}
 
+int main(int argc, char *argv[])
+{
+  
+  int connections;
+  if (argc != 5) {
+    fprintf(stderr, "Usage: %s <host> <port> <filename> <connections>\n", argv[0]);
+    exit(1);
+  }
+
+  host = argv[1];
+  port = atoi(argv[2]);
+  filename = argv[3];
+  connections = atoi(argv[4]);
+  pthread_t t[connections];
+
+  int i;
+  for(i=0;i<connections;i++){
+  	pthread_create(&t[i],NULL,myFunc,NULL);
+	}
+
+  /* Open a single connection to the specified host and port */
+  for(i=0;i<connections;i++){
+		pthread_join(t[i],NULL);
+	}
   exit(0);
 }
